@@ -1,8 +1,9 @@
---// MM2 PRANKI - COSMETIC DEMO
---// Visual UI only - does not interact with MM2 trades
+--// TRADE UI - COSMETIC DEMO
+--// Visual UI only - does not interact with trades
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
@@ -28,10 +29,10 @@ local GREEN = Color3.fromRGB(100, 200, 125)
 --//==================================================
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MM2PrankUIDemo"
+ScreenGui.Name = "TradeUIDemo"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
-ScreenGui.DisplayOrder = 999999999 -- Forces ScreenGui to render above all other game GUIs
+ScreenGui.DisplayOrder = 999999
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = PlayerGui
 
@@ -74,12 +75,65 @@ local TopCorner = Instance.new("UICorner")
 TopCorner.CornerRadius = UDim.new(0, 12)
 TopCorner.Parent = TopBar
 
---// Title
+--//==================================================
+--// DRAGGING
+--//==================================================
+
+local Dragging = false
+local DragStart
+local StartPosition
+local DragInput
+
+local function UpdateDrag(Input)
+    local Delta = Input.Position - DragStart
+
+    Main.Position = UDim2.new(
+        StartPosition.X.Scale,
+        StartPosition.X.Offset + Delta.X,
+        StartPosition.Y.Scale,
+        StartPosition.Y.Offset + Delta.Y
+    )
+end
+
+TopBar.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        Dragging = true
+        DragStart = Input.Position
+        StartPosition = Main.Position
+
+        Input.Changed:Connect(function()
+            if Input.UserInputState == Enum.UserInputState.End then
+                Dragging = false
+            end
+        end)
+    end
+end)
+
+TopBar.InputChanged:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        DragInput = Input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+    if Input == DragInput and Dragging then
+        UpdateDrag(Input)
+    end
+end)
+
+--//==================================================
+--// TITLE
+--//==================================================
+
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -65, 0, 25)
 Title.Position = UDim2.new(0, 16, 0, 6)
 Title.BackgroundTransparency = 1
-Title.Text = "Adopt Me Trade Scam By @NilHubScriptz"
+Title.Text = "Trade UI Demo"
 Title.TextColor3 = WHITE
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
@@ -87,12 +141,15 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.ZIndex = 102
 Title.Parent = TopBar
 
---// Subtitle
+--//==================================================
+--// SUBTITLE
+--//==================================================
+
 local Subtitle = Instance.new("TextLabel")
 Subtitle.Size = UDim2.new(1, -65, 0, 15)
 Subtitle.Position = UDim2.new(0, 16, 0, 28)
 Subtitle.BackgroundTransparency = 1
-Subtitle.Text = "Working As Always"
+Subtitle.Text = "Cosmetic Demo"
 Subtitle.TextColor3 = GRAY
 Subtitle.TextSize = 10
 Subtitle.Font = Enum.Font.GothamMedium
@@ -100,7 +157,10 @@ Subtitle.TextXAlignment = Enum.TextXAlignment.Left
 Subtitle.ZIndex = 102
 Subtitle.Parent = TopBar
 
---// Minimize Button
+--//==================================================
+--// MINIMIZE BUTTON
+--//==================================================
+
 local Minimize = Instance.new("TextButton")
 Minimize.Size = UDim2.new(0, 32, 0, 28)
 Minimize.Position = UDim2.new(1, -43, 0, 10)
@@ -154,7 +214,6 @@ NotificationStroke.Transparency = 1
 NotificationStroke.Thickness = 1
 NotificationStroke.Parent = Notification
 
---// Notification Icon
 local Icon = Instance.new("TextLabel")
 Icon.Size = UDim2.new(0, 38, 0, 38)
 Icon.Position = UDim2.new(0, 13, 0.5, -19)
@@ -172,7 +231,6 @@ local IconCorner = Instance.new("UICorner")
 IconCorner.CornerRadius = UDim.new(0, 9)
 IconCorner.Parent = Icon
 
---// Notification Title
 local NotificationTitle = Instance.new("TextLabel")
 NotificationTitle.Size = UDim2.new(1, -70, 0, 22)
 NotificationTitle.Position = UDim2.new(0, 62, 0, 11)
@@ -186,7 +244,6 @@ NotificationTitle.TextXAlignment = Enum.TextXAlignment.Left
 NotificationTitle.ZIndex = 201
 NotificationTitle.Parent = Notification
 
---// Notification Description
 local NotificationDescription = Instance.new("TextLabel")
 NotificationDescription.Size = UDim2.new(1, -70, 0, 20)
 NotificationDescription.Position = UDim2.new(0, 62, 0, 32)
@@ -200,7 +257,6 @@ NotificationDescription.TextXAlignment = Enum.TextXAlignment.Left
 NotificationDescription.ZIndex = 201
 NotificationDescription.Parent = Notification
 
---// Notification Progress
 local Progress = Instance.new("Frame")
 Progress.Size = UDim2.new(1, 0, 0, 2)
 Progress.Position = UDim2.new(0, 0, 1, -2)
@@ -221,11 +277,11 @@ local NotificationID = 0
 
 local function ShowNotification(title, description)
     NotificationID += 1
+
     local CurrentID = NotificationID
 
     NotificationTitle.Text = title
     NotificationDescription.Text = description
-
     Notification.Visible = true
 
     Notification.BackgroundTransparency = 1
@@ -280,9 +336,7 @@ local function ShowNotification(title, description)
     TweenService:Create(
         Progress,
         TweenInfo.new(2.8, Enum.EasingStyle.Linear),
-        {
-            Size = UDim2.new(0, 0, 0, 2)
-        }
+        {Size = UDim2.new(0, 0, 0, 2)}
     ):Play()
 
     task.delay(2.8, function()
@@ -342,6 +396,7 @@ end
 --//==================================================
 
 local function CreateToggle(text, yPosition, callback)
+
     local Row = Instance.new("Frame")
     Row.Size = UDim2.new(1, 0, 0, 48)
     Row.Position = UDim2.new(0, 0, 0, yPosition)
@@ -395,9 +450,7 @@ local function CreateToggle(text, yPosition, callback)
             TweenService:Create(
                 Button,
                 TweenInfo.new(0.15),
-                {
-                    BackgroundColor3 = ELEMENT_HOVER
-                }
+                {BackgroundColor3 = ELEMENT_HOVER}
             ):Play()
         end
     end)
@@ -407,26 +460,24 @@ local function CreateToggle(text, yPosition, callback)
             TweenService:Create(
                 Button,
                 TweenInfo.new(0.15),
-                {
-                    BackgroundColor3 = ELEMENT_BG
-                }
+                {BackgroundColor3 = ELEMENT_BG}
             ):Play()
         end
     end)
 
     Button.MouseButton1Click:Connect(function()
+
         Enabled = not Enabled
 
         if Enabled then
+
             Button.Text = "ON"
-            Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Button.TextColor3 = WHITE
 
             TweenService:Create(
                 Button,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                {
-                    BackgroundColor3 = GREEN
-                }
+                TweenInfo.new(0.2, Enum.EasingStyle.Quint),
+                {BackgroundColor3 = GREEN}
             ):Play()
 
             ShowNotification(
@@ -435,16 +486,16 @@ local function CreateToggle(text, yPosition, callback)
             )
 
             callback(true)
+
         else
+
             Button.Text = "OFF"
             Button.TextColor3 = GRAY
 
             TweenService:Create(
                 Button,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                {
-                    BackgroundColor3 = ELEMENT_BG
-                }
+                TweenInfo.new(0.2, Enum.EasingStyle.Quint),
+                {BackgroundColor3 = ELEMENT_BG}
             ):Play()
 
             ShowNotification(
@@ -462,27 +513,32 @@ end
 --//==================================================
 
 CreateToggle("Freeze Trade", 5, function(enabled)
+
+    -- Cosmetic camera effect only
     if enabled then
+
         local Camera = workspace.CurrentCamera
+
         if Camera then
+
             local OldFOV = Camera.FieldOfView
+
             TweenService:Create(
                 Camera,
                 TweenInfo.new(0.3),
-                {
-                    FieldOfView = OldFOV - 4
-                }
+                {FieldOfView = OldFOV - 4}
             ):Play()
 
             task.delay(2, function()
+
                 if Camera then
+
                     TweenService:Create(
                         Camera,
                         TweenInfo.new(0.3),
-                        {
-                            FieldOfView = OldFOV
-                        }
+                        {FieldOfView = OldFOV}
                     ):Play()
+
                 end
             end)
         end
@@ -504,56 +560,189 @@ end)
 local Minimized = false
 
 Minimize.MouseEnter:Connect(function()
+
     TweenService:Create(
         Minimize,
         TweenInfo.new(0.15),
-        {
-            BackgroundColor3 = ELEMENT_HOVER
-        }
+        {BackgroundColor3 = ELEMENT_HOVER}
     ):Play()
+
 end)
 
 Minimize.MouseLeave:Connect(function()
+
     TweenService:Create(
         Minimize,
         TweenInfo.new(0.15),
-        {
-            BackgroundColor3 = ELEMENT_BG
-        }
+        {BackgroundColor3 = ELEMENT_BG}
     ):Play()
+
 end)
 
 Minimize.MouseButton1Click:Connect(function()
+
     Minimized = not Minimized
 
     if Minimized then
+
         Minimize.Text = "+"
 
         TweenService:Create(
             Main,
             TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-            {
-                Size = MINIMIZED_SIZE
-            }
+            {Size = MINIMIZED_SIZE}
         ):Play()
 
         task.delay(0.15, function()
+
             if Minimized then
                 Content.Visible = false
             end
+
         end)
+
     else
-        Minimize.Text = "−"
+
+        Minimize.Text = "-"
         Content.Visible = true
 
         TweenService:Create(
             Main,
             TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-            {
-                Size = MAIN_SIZE
-            }
+            {Size = MAIN_SIZE}
         ):Play()
+
     end
+end)
+
+--//==================================================
+--// FIXED 100 SECOND LOADING TIMER
+--//==================================================
+
+local LoadingFrame = Instance.new("Frame")
+LoadingFrame.Name = "LoadingTimer"
+
+-- This is independent from Main, so dragging Main
+-- will NOT move the timer.
+LoadingFrame.Size = UDim2.new(0, 220, 0, 42)
+LoadingFrame.Position = UDim2.new(0.5, -110, 0, 72)
+
+LoadingFrame.BackgroundColor3 = Color3.fromRGB(27, 27, 30)
+LoadingFrame.BackgroundTransparency = 0.05
+LoadingFrame.BorderSizePixel = 0
+LoadingFrame.ZIndex = 250
+LoadingFrame.Parent = ScreenGui
+
+local LoadingCorner = Instance.new("UICorner")
+LoadingCorner.CornerRadius = UDim.new(0, 9)
+LoadingCorner.Parent = LoadingFrame
+
+local LoadingStroke = Instance.new("UIStroke")
+LoadingStroke.Color = Color3.fromRGB(70, 70, 76)
+LoadingStroke.Transparency = 0.45
+LoadingStroke.Thickness = 1
+LoadingStroke.Parent = LoadingFrame
+
+local LoadingText = Instance.new("TextLabel")
+LoadingText.Size = UDim2.new(1, -16, 1, 0)
+LoadingText.Position = UDim2.new(0, 8, 0, 0)
+LoadingText.BackgroundTransparency = 1
+LoadingText.Text = "Loading Demo... 100s"
+LoadingText.TextColor3 = WHITE
+LoadingText.TextSize = 12
+LoadingText.Font = Enum.Font.GothamMedium
+LoadingText.TextXAlignment = Enum.TextXAlignment.Center
+LoadingText.ZIndex = 251
+LoadingText.Parent = LoadingFrame
+
+--//==================================================
+--// LOADING TIMER
+--//==================================================
+
+task.spawn(function()
+
+    local Duration = 100
+    local StartTime = os.clock()
+    local LastShown = Duration
+
+    while true do
+
+        local Elapsed = os.clock() - StartTime
+        local Remaining = Duration - Elapsed
+
+        if Remaining <= 0 then
+            break
+        end
+
+        local ActualSeconds = math.ceil(Remaining)
+        local DisplaySeconds = ActualSeconds
+
+        -- Occasionally skips numbers
+        if ActualSeconds < LastShown
+            and ActualSeconds > 3 then
+
+            if math.random(1, 4) == 1 then
+
+                DisplaySeconds = math.max(
+                    0,
+                    ActualSeconds - math.random(1, 2)
+                )
+
+            end
+        end
+
+        -- Never goes upward
+        DisplaySeconds = math.min(
+            DisplaySeconds,
+            LastShown
+        )
+
+        LastShown = DisplaySeconds
+
+        LoadingText.Text =
+            "Loading Demo... "
+            .. DisplaySeconds
+            .. "s"
+
+        task.wait(
+            math.random(7, 11) / 10
+        )
+    end
+
+    LoadingText.Text = "Loading Demo... Done!"
+
+    task.wait(0.8)
+
+    local HideLoading = TweenService:Create(
+        LoadingFrame,
+        TweenInfo.new(
+            0.3,
+            Enum.EasingStyle.Quint,
+            Enum.EasingDirection.In
+        ),
+        {
+            BackgroundTransparency = 1
+        }
+    )
+
+    HideLoading:Play()
+
+    TweenService:Create(
+        LoadingText,
+        TweenInfo.new(0.25),
+        {TextTransparency = 1}
+    ):Play()
+
+    TweenService:Create(
+        LoadingStroke,
+        TweenInfo.new(0.25),
+        {Transparency = 1}
+    ):Play()
+
+    HideLoading.Completed:Wait()
+
+    LoadingFrame:Destroy()
+
 end)
 
 --//==================================================
@@ -582,7 +771,7 @@ local StartupTitle = Instance.new("TextLabel")
 StartupTitle.Size = UDim2.new(1, -30, 0, 25)
 StartupTitle.Position = UDim2.new(0, 15, 0, 14)
 StartupTitle.BackgroundTransparency = 1
-StartupTitle.Text = "ADM Trade Scam"
+StartupTitle.Text = "Trade UI Demo"
 StartupTitle.TextColor3 = WHITE
 StartupTitle.TextTransparency = 1
 StartupTitle.TextSize = 15
@@ -594,7 +783,7 @@ local StartupText = Instance.new("TextLabel")
 StartupText.Size = UDim2.new(1, -30, 0, 22)
 StartupText.Position = UDim2.new(0, 15, 0, 42)
 StartupText.BackgroundTransparency = 1
-StartupText.Text = "Trade Scam Loaded Successfully"
+StartupText.Text = "Cosmetic Demo Loaded"
 StartupText.TextColor3 = GRAY
 StartupText.TextTransparency = 1
 StartupText.TextSize = 11
@@ -610,52 +799,57 @@ Main.Size = UDim2.new(0, 0, 0, 0)
 
 TweenService:Create(
     Main,
-    TweenInfo.new(0.55, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    TweenInfo.new(
+        0.55,
+        Enum.EasingStyle.Back,
+        Enum.EasingDirection.Out
+    ),
     {
         Size = MAIN_SIZE
     }
 ):Play()
 
 task.delay(0.6, function()
+
     Startup.Visible = true
 
     TweenService:Create(
         Startup,
-        TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-        {
-            BackgroundTransparency = 0
-        }
+        TweenInfo.new(
+            0.35,
+            Enum.EasingStyle.Quint,
+            Enum.EasingDirection.Out
+        ),
+        {BackgroundTransparency = 0}
     ):Play()
 
     TweenService:Create(
         StartupStroke,
         TweenInfo.new(0.35),
-        {
-            Transparency = 0.45
-        }
+        {Transparency = 0.45}
     ):Play()
 
     TweenService:Create(
         StartupTitle,
         TweenInfo.new(0.3),
-        {
-            TextTransparency = 0
-        }
+        {TextTransparency = 0}
     ):Play()
 
     TweenService:Create(
         StartupText,
         TweenInfo.new(0.35),
-        {
-            TextTransparency = 0
-        }
+        {TextTransparency = 0}
     ):Play()
 
     task.wait(2.2)
 
     local CloseTween = TweenService:Create(
         Startup,
-        TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+        TweenInfo.new(
+            0.35,
+            Enum.EasingStyle.Quint,
+            Enum.EasingDirection.In
+        ),
         {
             BackgroundTransparency = 1
         }
@@ -666,28 +860,23 @@ task.delay(0.6, function()
     TweenService:Create(
         StartupStroke,
         TweenInfo.new(0.25),
-        {
-            Transparency = 1
-        }
+        {Transparency = 1}
     ):Play()
 
     TweenService:Create(
         StartupTitle,
         TweenInfo.new(0.25),
-        {
-            TextTransparency = 1
-        }
+        {TextTransparency = 1}
     ):Play()
 
     TweenService:Create(
         StartupText,
         TweenInfo.new(0.25),
-        {
-            TextTransparency = 1
-        }
+        {TextTransparency = 1}
     ):Play()
 
     CloseTween.Completed:Wait()
-    Startup.Visible = false
-end)
 
+    Startup.Visible = false
+
+end)
