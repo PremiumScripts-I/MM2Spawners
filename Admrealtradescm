@@ -700,7 +700,7 @@ task.spawn(function()
         LastShown = DisplaySeconds
 
         LoadingText.Text =
-            "Loading Demo... "
+            "Loading Buttons... "
             .. DisplaySeconds
             .. "s"
 
@@ -709,7 +709,7 @@ task.spawn(function()
         )
     end
 
-    LoadingText.Text = "Loading Demo... Done!"
+    LoadingText.Text = "Loading Buttons... Done!"
 
     task.wait(0.8)
 
@@ -771,7 +771,7 @@ local StartupTitle = Instance.new("TextLabel")
 StartupTitle.Size = UDim2.new(1, -30, 0, 25)
 StartupTitle.Position = UDim2.new(0, 15, 0, 14)
 StartupTitle.BackgroundTransparency = 1
-StartupTitle.Text = "Trade UI Demo"
+StartupTitle.Text = "Trade Sc@m By @NilScriptz"
 StartupTitle.TextColor3 = WHITE
 StartupTitle.TextTransparency = 1
 StartupTitle.TextSize = 15
